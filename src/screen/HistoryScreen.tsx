@@ -1,21 +1,22 @@
 import { useNavigation } from '@react-navigation/native'
 import moment from 'moment'
 import React, { useEffect, useState } from 'react'
-import { SafeAreaView, ScrollView, StyleSheet, View, Text, TouchableOpacity, Image, TextInput } from 'react-native'
+import { SafeAreaView, ScrollView, StyleSheet, View, Text, TouchableOpacity, Image, TextInput, FlatList } from 'react-native'
 import DatePicker from 'react-native-date-picker'
-import { Colors } from 'react-native/Libraries/NewAppScreen'
-import { getAllDcpReports } from '../api/mistake'
 import { color } from '../assets/color'
 import { fontSize, widthDevice } from '../assets/size'
+import { WATER_OFF, WATER_ON } from '../assets/source/icon'
 import HeaderHome from '../component/HeaderMain'
+import { TREE_STATUS } from '../constant/environment'
+import { RelayData } from '../model/MqttData'
 import usePagingInfo from '../ultil/usePagingInfo'
+import { initRelay } from './HomeScreen'
 
-const HomeScreen = () => {
+const HistoryScreen = () => {
   const navigation = useNavigation()
   const [dateFromPicker, setDateFromPicker] = useState(false)
   const [dateToPicker, setDateToPicker] = useState(false)
-  const [datePicker, setDatePicker] = useState(false)
-  const [listDcpReport, setListDcpReport] = useState([])
+  const [relayData, setRelayData] = useState<RelayData[]>(initRelay)
 
   const { pagingInfo, setPageIndex, setFilter } = usePagingInfo({
     filter: [
@@ -43,18 +44,41 @@ const HomeScreen = () => {
   });
 
   useEffect(() => {
-    getHistoryDcpReports()
-  }, [pagingInfo])
+  }, [])
 
-  const getHistoryDcpReports = async () => {
-    const input = {
-      pageIndex: 1,
-      pageSize: 10,
-      sortName: '',
-      filter: pagingInfo.filter
-    }
-    const res = await getAllDcpReports(input)
-    setListDcpReport(res.data)
+  const _renderItem = (item: RelayData, index: number) => {
+    return (
+      <View style={styles.device}>
+        <Image
+          source={WATER_ON}
+          style={styles.deviceImage}
+        />
+        <View style={styles.deviceItemContainer}>
+          <Text style={styles.deviceName}>{`Van ${index + 1}`}</Text>
+          {/* <View style={styles.deviceInfo}> */}
+          <View style={styles.deviceSoil}>
+            {/* <Image source={require('../assets/icon/soil.png')}
+                style={styles.deviceIcon}
+              /> */}
+            <Text style={styles.deviceName}>{`Đã bơm: `}</Text>
+            <Text style={styles.deviceContent}>{` ${item.soil_humidity ?? ''} lần`}</Text>
+          </View>
+          <View style={styles.deviceSoil}>
+            {/* <Image source={require('../assets/icon/soil_warning.png')}
+                style={styles.deviceIcon}
+              /> */}
+            <Text style={styles.deviceName}>{`Lượng nước: `}</Text>
+            <Text style={styles.deviceContent}>{` ${"30"} ml`}</Text>
+          </View>
+          {/* </View> */}
+        </View>
+        <View style={styles.deviceRight}>
+          <TouchableOpacity>
+            <Text style={styles.more}>{`Chi tiết: `}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    )
   }
 
   const _renderDatePicker = () => {
@@ -81,36 +105,9 @@ const HomeScreen = () => {
     )
   }
 
-  const _renderItem = (item: any) => {
-    return (
-      <View style={styles.itemContainer}>
-        <View style={styles.infoContainer}>
-          <Text style={styles.dateTime}>{`Phiếu chấm ngày ${'2021'}`}</Text>
-          <View style={styles.line2Container}>
-            <View style={styles.timeContainer}>
-              <Image source={require('../assets/icon/clock.png')} />
-              <Text style={styles.line2Content}>{`07:15 AM`}</Text>
-            </View>
-            <View style={styles.statusContainer}>
-              <Image source={require('../assets/icon/status.png')} />
-              <Text style={[styles.line2Content, { color: 'red' }]}>{`Đã duyệt`}</Text>
-            </View>
-          </View>
-        </View>
-        <TouchableOpacity>
-          <TouchableOpacity
-          // onPress={() => removeMistake(index)}
-          >
-            <Image source={require('../assets/icon/remove.png')} style={styles.iconRemove} />
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </View>
-    )
-  }
-
   return (
     <SafeAreaView style={styles.container}>
-      <HeaderHome title="Lịch sử chấm" />
+      <HeaderHome title="Lịch sử bơm nước" />
       {_renderDatePicker()}
       <DatePicker
         modal
@@ -144,9 +141,16 @@ const HomeScreen = () => {
           setDateToPicker(false)
         }}
       />
-      <ScrollView>
-        {listDcpReport.map(item => _renderItem(item))}
-      </ScrollView>
+      <View style={styles.mainContainer}>
+        <Text style={styles.mainTitle}>Danh sách thiết bị</Text>
+        <View style={styles.devicesContainer}>
+          <FlatList
+            data={relayData}
+            keyExtractor={item => item.relay_id}
+            renderItem={({ item, index }) => _renderItem(item, index)}
+          />
+        </View>
+      </View>
     </SafeAreaView>
   )
 }
@@ -154,7 +158,7 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: color.background
+    backgroundColor: color.background,
   },
   iconRemove: {
     tintColor: 'gray',
@@ -220,7 +224,83 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     width: widthDevice * 30 / 100,
     borderRadius: 3
+  },
+  mainTitle: {
+    fontSize: fontSize.content,
+    fontWeight: 'bold',
+    marginTop: 20,
+  },
+  mainContainer: {
+    alignItems: 'center',
+  },
+  devicesContainer: {
+    paddingVertical: 10,
+    marginHorizontal: '5%',
+    borderRadius: 5,
+    width: '90%',
+  },
+  device: {
+    width: '100%',
+    marginTop: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    backgroundColor: 'white',
+    borderRadius: 5,
+    flexDirection: 'row',
+  },
+  deviceItemContainer: {
+    flex: 1,
+    marginLeft: 15,
+    justifyContent: 'space-between',
+    height: 65,
+  },
+  deviceInfo: {
+    flexDirection: 'row',
+  },
+  deviceSoil: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    flex: 1
+  },
+  deviceName: {
+    fontSize: fontSize.content,
+    fontWeight: 'bold',
+  },
+  deviceImage: {
+    width: 60,
+    height: 60,
+  },
+  deviceIcon: {
+    width: 25,
+    height: 25,
+  },
+  deviceIconEdit: {
+    width: 20,
+    height: 20,
+    tintColor: 'white'
+  },
+  deviceIconStatus: {
+    width: 15,
+    height: 15,
+  },
+  deviceContent: {
+    fontSize: fontSize.contentSmall
+  },
+  deviceRight: {
+    justifyContent: 'space-between',
+    alignItems: 'flex-end'
+  },
+  buttonEdit: {
+    backgroundColor: color.blueStrong,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10
+  },
+  more: {
+    color: color.blueStrong,
+    fontStyle: 'italic'
   }
 });
 
-export default HomeScreen
+export default HistoryScreen

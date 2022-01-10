@@ -2,140 +2,180 @@ import { CommonActions, useNavigation } from '@react-navigation/native'
 import React, { useEffect, useState } from 'react'
 import { Alert, FlatList, Image, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import { getClass } from '../api/class'
-import { getCriteria, getRegulation } from '../api/mistake'
 import { color } from '../assets/color'
 import { fontSize, widthDevice } from '../assets/size'
+import { WATER_OFF, WATER_ON } from '../assets/source/icon'
 import HeaderMain from '../component/HeaderMain'
-import { Class } from '../model/Class'
-import { addCriteria } from '../redux/action/criteria'
-import { addClassMistake } from '../redux/action/mistake'
-import { addRegulation } from '../redux/action/regulation'
+import { TREE_STATUS } from '../constant/environment'
+import { MQTT_Broker, MQTT_TOPIC_SUB } from '../constant/mqtt'
+import { RelayData, Environment } from '../model/MqttData'
 import { RootState } from '../redux/reducer'
-import { Faults } from '../redux/reducer/mistake'
+
+const initEnv: Environment = {
+  temperature: "0",
+  humidity: "0"
+}
+export const initRelay: RelayData[] = [
+  {
+    relay_id: "1",
+    status: "0",
+    soil_humidity: "0"
+  },
+  {
+    relay_id: "2",
+    status: "0",
+    soil_humidity: "0"
+  },
+  {
+    relay_id: "3",
+    status: "0",
+    soil_humidity: "0"
+  },
+  {
+    relay_id: "4",
+    status: "0",
+    soil_humidity: "0"
+  }
+]
 
 const HomeScreen = () => {
+  const client = new Paho.MQTT.Client(MQTT_Broker.HOST, MQTT_Broker.PORT, MQTT_Broker.CLIENT_NAME);
   const dispatch = useDispatch()
   const navigation = useNavigation()
-  const dcpReport = useSelector((state: RootState) => state.mistake)
-  const [search, setSearch] = useState('')
-  const [classes, setClasses] = useState<Class[]>([])
-  const [listClass, setListClass] = useState<Class[]>([])
+  const { macAddress } = useSelector((state: RootState) => state.device)
+  let topicSubRelayData = `${MQTT_TOPIC_SUB.RELAY_DATA}${macAddress}`
+  let topicSubEnvironment = `${MQTT_TOPIC_SUB.ENV}${macAddress}`
+  let topicSubNotification = `${MQTT_TOPIC_SUB.NOTIFICATION}${macAddress}`
+  const [relayData, setRelayData] = useState<RelayData[]>(initRelay)
+  const [environment, setEnvironment] = useState<Environment>(initEnv)
 
   useEffect(() => {
-    initClass()
-    initCriteria()
-    initRegulation()
-  }, [])
+    topicSubRelayData = `${MQTT_TOPIC_SUB.RELAY_DATA}${macAddress}`
+    topicSubEnvironment = `${MQTT_TOPIC_SUB.ENV}${macAddress}`
+    topicSubNotification = `${MQTT_TOPIC_SUB.NOTIFICATION}${macAddress}`
+    client.onConnectionLost = onConnectionLost;
+    client.onMessageArrived = onMessageArrived;
+    client.connect(options);
+  }, [macAddress])
 
-  const initClass = async () => {
-    try {
-      const res: any = await getClass();
-      setListClass(res.data.items)
-      setClasses(res.data.items)
-      addListClassMistake(res.data.items)
-    } catch (err) {
-      Alert.alert("Error")
+  var options = {
+    useSSL: true,
+    userName: MQTT_Broker.USER_NAME,
+    password: MQTT_Broker.PASSWORD,
+    onSuccess: onConnect,
+    onFailure: onConnectionLost
+  }
+
+  // connect the client
+
+  function onConnect() {
+    console.log("onConnect");
+    client.subscribe(topicSubRelayData)
+    console.log("Subscribe ", topicSubRelayData);
+    client.subscribe(topicSubEnvironment)
+    console.log("Subscribe ", topicSubEnvironment);
+  }
+
+  function onConnectionLost(responseObject: any) {
+    if (responseObject.errorCode !== 0) {
+      console.log("onConnectionLost:" + responseObject.errorMessage);
     }
   }
 
-  const initCriteria = async () => {
-    try {
-      const res: any = await getCriteria()
-      // setListCriteria(res.data.items)
-      dispatch(addCriteria(res.data.items))
-    } catch (error) {
-      Alert.alert('Error')
-    }
-  }
-
-  const initRegulation = async () => {
-    try {
-      const res: any = await getRegulation()
-      // setListCriteria(res.data.items)
-      dispatch(addRegulation(res.data.items))
-    } catch (error) {
-      Alert.alert('Error')
-    }
-  }
-
-  const addListClassMistake = (listClass: Class[]) => {
-    if (dcpReport.dcpClassReports.length > 0) return
-    const listClassMistake = listClass.map(item => {
-      return {
-        classId: item.id,
-        faults: [] as Faults[]
+  function onMessageArrived(message: any) {
+    console.log("onMessageArrived: " + message.topic + message.payloadString);
+    switch (message.topic) {
+      case topicSubRelayData: {
+        setRelayData(JSON.parse(message.payloadString))
+        break;
       }
-    })
-    const dcpClassReports = {
-      dcpClassReports: listClassMistake
+      case topicSubEnvironment: {
+        setEnvironment(JSON.parse(message.payloadString))
+        break;
+      }
+      case topicSubNotification: {
+        Alert.alert("Warning", message.payloadString.message)
+        //
+        break;
+      }
+      default:
+        break;
     }
-    dispatch(addClassMistake(dcpClassReports))
   }
 
-  const _renderItem = (item: Class) => {
+  const _renderItem = (item: RelayData, index: number) => {
+    const soilHumidity = item.soil_humidity ? Number(item.soil_humidity) : 0
+    let treeStatus = TREE_STATUS.GOOD
+    if (Number(item.status) === 1) treeStatus = TREE_STATUS.WATERING
+    else {
+      if (soilHumidity < 30) treeStatus = TREE_STATUS.WARNING
+      else treeStatus = TREE_STATUS.GOOD
+    }
     return (
-      <View style={styles.classContainer}>
-        <Text style={styles.class}>{item.name}</Text>
-        <TouchableOpacity
-          onPress={() => navigation.dispatch(
-            CommonActions.navigate({
-              name: 'ClassReportList',
-              params: item
-            })
-          )}>
-          <Image source={require('../assets/icon/edit.png')} />
-        </TouchableOpacity>
+      <View style={styles.device}>
+        <Image
+          source={Number(item.status) === 1 ? WATER_ON : WATER_OFF}
+          style={styles.deviceImage}
+        />
+        <View style={styles.deviceItemContainer}>
+          <Text style={styles.deviceName}>{`Van ${index + 1}`}</Text>
+          <View style={styles.deviceInfo}>
+            <View style={styles.deviceSoil}>
+              <Image source={require('../assets/icon/soil.png')}
+                style={styles.deviceIcon}
+              />
+              <Text style={styles.deviceContent}>{` ${item.soil_humidity ?? ''} %`}</Text>
+            </View>
+            <View style={styles.deviceSoil}>
+              <Image source={require('../assets/icon/soil_warning.png')}
+                style={styles.deviceIcon}
+              />
+              <Text style={styles.deviceContent}>{` ${"30"} %`}</Text>
+            </View>
+          </View>
+        </View>
+        <View style={styles.deviceRight}>
+          <Image source={require('../assets/icon/status.png')}
+            style={[styles.deviceIconStatus, { tintColor: treeStatus }]}
+          />
+          <TouchableOpacity style={styles.buttonEdit}>
+            <Image source={require('../assets/icon/edit.png')}
+              style={styles.deviceIconEdit}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
     )
-  }
-
-  const toChar = (str: string) => {
-    return str.toLowerCase().
-      normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/đ/g, 'd').replace(/Đ/g, 'D');
-  };
-
-  const _setSearch = (value: string) => {
-    setSearch(value)
-    const newValue = value
-    const newClasses = listClass.map(item => {
-      return {
-        name: toChar(item.name),
-        id: item.id
-      }
-    })
-
-    const newSearchClass = newClasses.filter(item => item.name.includes(newValue) === true)
-    const newListClass: any[] = newSearchClass.map(item => {
-      const newClass = listClass.find(itemChild => itemChild.id === item.id)
-      return newClass
-    })
-    setClasses(newListClass)
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <HeaderMain
-        title="Trang chủ"
+        title="Môi trường"
       />
-      <View style={styles.mainContainer}>
-        <Text style={styles.mainTitle}>Danh sách chấm vi phạm</Text>
-        <View style={styles.searchInput}>
-          <Image source={require('../assets/icon/search.png')} style={styles.iconSearch} />
-          <TextInput
-            placeholder="Nhập tên lớp"
-            placeholderTextColor={color.placeholder}
-            value={search}
-            onChangeText={(value: string) => _setSearch(value)}
+      <View style={styles.environmentContainer}>
+        <View style={styles.environmentLeftContainer}>
+          <Image
+            source={require('../assets/icon/temperature.png')}
+            style={styles.iconEnvironment}
           />
+          <Text style={styles.contentEnvironment}>{environment.temperature} °C</Text>
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={styles.environmentRightContainer}>
+          <Image
+            source={require('../assets/icon/humidity.png')}
+            style={styles.iconEnvironment}
+          />
+          <Text style={styles.contentEnvironment}>{environment.humidity} %</Text>
+        </View>
+      </View>
+      <View style={styles.mainContainer}>
+        <Text style={styles.mainTitle}>Danh sách thiết bị</Text>
+        <View style={styles.devicesContainer}>
           <FlatList
-            data={classes}
-            keyExtractor={item => item.id}
-            renderItem={({ item }) => _renderItem(item)}
+            data={relayData}
+            keyExtractor={item => item.relay_id}
+            renderItem={({ item, index }) => _renderItem(item, index)}
           />
         </View>
       </View>
@@ -162,6 +202,103 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
+  environmentContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    backgroundColor: 'white',
+    paddingVertical: 10,
+    paddingHorizontal: '5%',
+    marginHorizontal: '5%',
+    borderRadius: 5,
+  },
+  environmentLeftContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    alignItems: 'center',
+  },
+  environmentRightContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end'
+  },
+  iconEnvironment: {
+    width: 50,
+    height: 50,
+    marginRight: 10
+  },
+  contentEnvironment: {
+    color: color.blueStrong,
+    fontSize: fontSize.title,
+    fontWeight: 'bold'
+  },
+  devicesContainer: {
+    paddingVertical: 10,
+    marginHorizontal: '5%',
+    borderRadius: 5,
+    width: '90%',
+
+  },
+  device: {
+    width: '100%',
+    marginTop: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    backgroundColor: 'white',
+    borderRadius: 5,
+    flexDirection: 'row',
+  },
+  deviceItemContainer: {
+    flex: 1,
+    marginLeft: 15,
+    justifyContent: 'space-between',
+    height: 65,
+  },
+  deviceInfo: {
+    flexDirection: 'row',
+  },
+  deviceSoil: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    flex: 1
+  },
+  deviceName: {
+    fontSize: fontSize.content,
+    fontWeight: 'bold',
+  },
+  deviceImage: {
+    width: 60,
+    height: 60,
+  },
+  deviceIcon: {
+    width: 25,
+    height: 25,
+  },
+  deviceIconEdit: {
+    width: 20,
+    height: 20,
+    tintColor: 'white'
+  },
+  deviceIconStatus: {
+    width: 15,
+    height: 15,
+  },
+  deviceContent: {
+    fontSize: fontSize.contentSmall
+  },
+  deviceRight: {
+    justifyContent: 'space-between',
+    alignItems: 'flex-end'
+  },
+  buttonEdit: {
+    backgroundColor: color.blueStrong,
+    width: 35,
+    height: 26,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
   mainTitle: {
     fontSize: fontSize.content,
     fontWeight: 'bold',
@@ -181,23 +318,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     borderRadius: 5,
     paddingHorizontal: 15
-  },
-  classContainer: {
-    width: widthDevice * 80 / 100,
-    backgroundColor: 'white',
-    paddingHorizontal: 30,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
-    height: 55,
-    alignItems: 'center',
-    borderRadius: 10,
-    borderWidth: 0.5,
-    borderColor: 'grey'
-  },
-  class: {
-    fontSize: fontSize.content,
-    fontWeight: 'bold',
   },
   iconSendContainer: {
     alignItems: 'flex-end'

@@ -1,50 +1,57 @@
 import { CommonActions, useNavigation } from '@react-navigation/native'
 import React, { useState } from 'react'
-import { Image, KeyboardAvoidingView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Alert, Image, KeyboardAvoidingView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { useDispatch } from 'react-redux'
-import { login } from '../api/login'
 import { color } from '../assets/color'
 import { fontSize, height, width } from '../assets/size'
 import { loginSuccess } from '../redux/action/auth'
-import auth, { firebase } from '@react-native-firebase/auth'
+import auth from '@react-native-firebase/auth'
+import { saveDevices } from '../redux/action/listDevices'
+import { setCurrentDevice } from '../redux/action/device'
+
+const ERROR_MESSAGE = {
+  emailValid: 'Email is invalid!',
+}
 
 const AuthScreen = () => {
   const navigation = useNavigation()
   const dispatch = useDispatch()
-  const [userName, setUserName] = useState('')
-  const [pass, setPass] = useState('')
+  const [userName, setUserName] = useState('hacker0k98@gmail.com')
+  const [pass, setPass] = useState('123321')
   const [errorMessage, setErrorMessage] = useState('')
   const [seePass, setSeePass] = useState(false)
 
-  const loginApi = async () => {
-
+  const loginByFirebase = async () => {
+    const regexEmail = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    const err = userName === '' ? 'Input email' : (regexEmail.test(userName) ? '' : ERROR_MESSAGE.emailValid)
+    if (err !== '') return Alert.alert("Error", err)
     try {
-      const res: any = await login({ username: userName, password: pass })
+      const res: any = await auth().signInWithEmailAndPassword(userName, pass)
       const payload = {
-        access_token: res.data.access_token,
-        token_type: res.data.token_type,
-        refresh_token: res.data.refresh_token,
-        expires_in: res.data.expires_in,
-        scope: res.data.scope
+        email: res.user._user.email
       }
       dispatch(loginSuccess(payload))
+      dispatch(saveDevices([
+        {
+          macAddress: "12345678",
+          nameDevice: `Địa chỉ MAC: 12345678`
+        },
+        {
+          macAddress: "87654321",
+          nameDevice: `Địa chỉ MAC: 87654321`
+
+        }
+      ]))
+      dispatch(setCurrentDevice({
+        macAddress: "12345678",
+        nameDevice: `Địa chỉ MAC: 12345678`
+      }))
       navigation.dispatch(
         CommonActions.navigate({
           name: 'AppStack',
-        })
-      )
-    } catch (err) {
-      console.log(err)
-      setErrorMessage('Thông tin tài khoản không đúng')
-    }
-  }
-
-  const loginByFirebase = async () => {
-    try {
-      const res = await auth().signInWithEmailAndPassword(userName, pass)
-      console.log('keytest', res)
-    } catch(e) {
-      console.log('keytest', e)
+        }))
+    } catch (e) {
+      Alert.alert("Error", "Username or Password is wrong!")
     }
   }
 
@@ -84,6 +91,14 @@ const AuthScreen = () => {
           style={styles.button}
         >
           <Text style={styles.buttonTitle}>Đăng nhập</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.dispatch(
+            CommonActions.navigate({
+              name: 'RegisterScreen',
+            }))}
+            >
+            <Text style={styles.register}>Đăng ký tài khoản</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -146,6 +161,12 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     tintColor: 'grey'
+  },
+  register: {
+    marginTop: 10,
+    fontSize: fontSize.contentSmall,
+    color: color.blueStrong,
+    textDecorationLine: 'underline'
   }
 })
 

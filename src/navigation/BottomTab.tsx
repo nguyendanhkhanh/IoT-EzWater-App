@@ -5,8 +5,8 @@ import { colorBlueStrong } from '../assets/color'
 import { iconSize } from '../assets/iconSize'
 import HomeScreen from '../screen/HomeScreen'
 import HistoryScreen from '../screen/HistoryScreen'
-import AchieveScreen from '../screen/AchieveScreen'
 import UserScreen from '../screen/UserScreen'
+import ReportScreen from '../screen/ReportScreen'
 
 const BottomTab = () => {
   const BotTab = createBottomTabNavigator()
@@ -38,7 +38,7 @@ const BottomTab = () => {
               source={focused ? require('../assets/icon/history.png') : require('../assets/icon/history2.png')} />
           )
         }} />
-      <BotTab.Screen name="AchieveScreen" component={AchieveScreen}
+      <BotTab.Screen name="ReportScreen" component={ReportScreen}
         options={{
           tabBarShowLabel: false,
           tabBarIcon: ({ focused }) => (

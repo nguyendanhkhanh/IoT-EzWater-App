@@ -9,13 +9,16 @@ interface Props {
   renderCenter?: () => ReactElement
   renderRight?: () => ReactElement
   title: string
+  disableGoBack?: boolean
 }
 
 const StatusHeaderBar = (props: Props) => {
-  const { renderLeft, renderCenter, renderRight, title } = props
+  const { renderLeft, renderCenter, renderRight, title, disableGoBack } = props
   const navigation = useNavigation()
   const _renderLeft = () => (
-    <TouchableOpacity onPress={() => navigation.goBack()}>
+    <TouchableOpacity
+      disabled={disableGoBack}
+      onPress={() => navigation.goBack()}>
       <Image source={require('../assets/icon/back.png')} style={styles.iconBack} />
     </TouchableOpacity>
   )
@@ -32,9 +35,9 @@ const StatusHeaderBar = (props: Props) => {
         // showHideTransition={statusBarTransition}
         hidden={false} />
       <View style={styles.headerContainer}>
-        {_renderLeft()}
+        {renderLeft ? renderLeft : _renderLeft()}
         {renderCenter ? renderCenter : _renderCenter()}
-        {renderRight ? renderRight : <View style={{marginRight: 15}}></View>}
+        {renderRight ? renderRight : <View style={{ marginRight: 15 }}></View>}
       </View>
     </View>
   )

@@ -1,14 +1,17 @@
-export type Token = {
-    access_token: string,
-    token_type: string, 
-    refresh_token: string,
-    expires_in?: string,
-    scope?: string
+import { LOGIN_SUCCESS, LOG_OUT } from "../type"
+
+export type Auth = {
+    email: string | null
 }
 
-export function loginSuccess (payload: Token) {
+export function loginSuccess (payload: Auth) {
     return {
-        type: 'LOGIN_SUCCESS',
+        type: LOGIN_SUCCESS,
         payload: payload
+    }
+}
+export function logout() {
+    return {
+        type: LOG_OUT,
     }
 }

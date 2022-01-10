@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react'
 import ChangePassword from '../screen/ChangePassword';
 import ClassReportList from '../screen/ClassReportList';
+import DeviceScreen from '../screen/DeviceScreen';
 import HomeScreen from '../screen/HomeScreen';
 import LrReport from '../screen/LrReport';
 import MistakeCreate from '../screen/MistakeCreate';
@@ -32,6 +33,7 @@ const AppStack = () => {
       {_renderItemScreen('MistakeDetail', MistakeDetail)}
       {_renderItemScreen('LrReport', LrReport)}
       {_renderItemScreen('ChangePassword', ChangePassword)}
+      {_renderItemScreen('DeviceScreen', DeviceScreen)}
     </Stack.Navigator>
   )
 }

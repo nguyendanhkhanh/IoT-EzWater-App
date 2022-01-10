@@ -3,28 +3,19 @@ import { store } from '../redux/store/store';
 import { configEnv } from './@config';
 import { configHttpRequest, configHttpResponse } from './@helper/network/interceptors';
 
-export const getDefaultOAuthOptions = () => {
-  const { oAuthConfig } = configEnv();
-  return {
-    'grant_type': 'password',
-    'scope': 'offline_access EzWater',
-    'client_id': 'Scool_App',
-    'client_secret': '1q2w3e*',
-  };
-};
 export const getApiService = async () => {
 
   // get token from store
-  const { 
-    auth: { token1 }
-  } = store.getState();
+  // const { 
+  //   auth: { token1 }
+  // } = store.getState();
 
-  // TODO: auto get access_token when expired 
-  const token = store.getState().auth.access_token;
+  // // TODO: auto get access_token when expired 
+  // const token = store.getState().auth.access_token;
 
   const axiosConfig = axios.create({
     baseURL: baseUrl,
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    headers: { 'Content-Type': 'application/json',  },
     withCredentials: true,
   });
 

@@ -8,7 +8,6 @@
  * @format
  */
 
-import { firebase } from '@react-native-firebase/auth';
 import React, { useEffect } from 'react';
 import {
   StyleSheet,
@@ -22,8 +21,10 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import { Provider } from 'react-redux';
 import AppContainer from './src/navigation';
-import { store } from './src/redux/store/store';
-
+import { persistor, store } from './src/redux/store/store';
+import init from 'react_native_mqtt';
+import AsyncStorage from '@react-native-community/async-storage'
+import { PersistGate } from 'redux-persist/integration/react';
 
 const Section: React.FC<{
   title: string;
@@ -56,13 +57,25 @@ const Section: React.FC<{
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
 
+  init({
+    size: 10000,
+    storageBackend: AsyncStorage,
+    defaultExpires: 1000 * 3600 * 24,
+    enableCache: true,
+    reconnect: true,
+    sync: {
+    }
+  });
+
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
   return (
     <Provider store={store}>
-      <AppContainer />
+      <PersistGate loading={null} persistor={persistor}>
+        <AppContainer />
+      </PersistGate>
     </Provider>
   );
 };

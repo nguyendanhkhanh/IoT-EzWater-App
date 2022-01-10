@@ -5,6 +5,7 @@ import {
 import { NavigationContainer } from '@react-navigation/native';
 import AuthStack from './AuthStack';
 import AppStack from './AppStack';
+import SplashScreen from '../screen/SplashScreen';
 
 const AppContainer = () => {
   const Stack = createNativeStackNavigator();
@@ -27,8 +28,7 @@ const AppContainer = () => {
     <NavigationContainer ref={navigationRef}>
       <Stack.Navigator  
         screenOptions={{gestureEnabled: false, headerShown: false}}>
-        {/* {_renderItemScreen('AppStack', AppStack)} */}
-
+        {_renderItemScreen('SplashScreen', SplashScreen)}
         {_renderItemScreen('AuthStack', AuthStack)}
         {_renderItemScreen('AppStack', AppStack)}
       </Stack.Navigator>

@@ -1,7 +1,6 @@
 import { CommonActions, useNavigation } from '@react-navigation/native'
 import React, { useEffect, useState } from 'react'
 import { Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import MultiSelect from 'react-native-multiple-select'
 import { getClass } from '../api/class'
 import { color } from '../assets/color'
 import { fontSize } from '../assets/size'
@@ -14,29 +13,8 @@ const HomeScreen = () => {
   const [listClass, setListClass] = useState<Class[]>([])
 
   useEffect(() => {
-    initClass()
   }, [])
 
-  useEffect(() => {
-    if (listClass.length > 0) {
-      setClassId(listClass[0].id)
-    }
-  }, [listClass])
-
-  const initClass = async () => {
-    try {
-      const res: any = await getClass();
-      setListClass(res.data.items)
-    } catch (err) {
-      Alert.alert("Error", "Can not get list class")
-      console.log(err)
-    }
-  }
-
-  const onSelectClass = (e: any) => {
-    setClassId(e[0])
-    console.log('keytest', e[0])
-  }
 
   const _renderItem = () => {
     return (

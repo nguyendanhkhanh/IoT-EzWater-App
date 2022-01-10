@@ -1,7 +1,6 @@
 import { useNavigation, useRoute } from '@react-navigation/native'
 import React, { useEffect, useState } from 'react'
 import { Alert, Image, Modal, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
-import MultiSelect from 'react-native-multiple-select'
 import { useDispatch, useSelector } from 'react-redux'
 import { getStudent } from '../api/mistake'
 import { color } from '../assets/color'
@@ -82,78 +81,7 @@ const MistakeCreate = () => {
       <Header title="Thêm vi phạm" />
       <View style={styles.mainContainer}>
         <View style={styles.contentContainer}>
-          <MultiSelect
-            fixedHeight
-            single
-            styleMainWrapper={styles.criteria}
-            items={listCriteria}
-            uniqueKey='id'
-            onSelectedItemsChange={onSelectCriteria}
-            selectedItems={[criteria]}
-            selectText='Tiêu chí'
-            searchInputPlaceholderText='Tên tiêu chí'
-            styleTextDropdown={styles.criteriaName}
-            styleTextDropdownSelected={styles.criteriaName}
-            onChangeInput={(text) => console.warn(text)}
-            tagRemoveIconColor='gray'
-            tagBorderColor='gray'
-            tagTextColor='black'
-            selectedItemTextColor='red'
-            selectedItemIconColor='red'
-            itemTextColor='#000'
-            displayKey='name'
-            submitButtonColor='#CCC'
-            submitButtonText='Submit'
-            searchInputStyle={{ fontSize: fontSize.contentSmall }}
-          />
-
-          <MultiSelect
-            fixedHeight
-            single
-            styleMainWrapper={styles.criteria}
-            items={listRegulation}
-            uniqueKey='id'
-            onSelectedItemsChange={onSelectRegulation}
-            selectedItems={[regulation]}
-            selectText='Tên vi phạm'
-            searchInputPlaceholderText='Tên vi phạm'
-            noItemsText='Vui lòng chọn tiêu chí'
-            styleTextDropdown={styles.criteriaName}
-            styleTextDropdownSelected={styles.criteriaName}
-            onChangeInput={(text) => console.warn(text)}
-            tagRemoveIconColor='gray'
-            tagBorderColor='gray'
-            tagTextColor='black'
-            selectedItemTextColor='red'
-            selectedItemIconColor='red'
-            itemTextColor='#000'
-            displayKey='name'
-            submitButtonColor='#CCC'
-            submitButtonText='Submit'
-            searchInputStyle={{ fontSize: fontSize.contentSmall }}
-          />
-          <MultiSelect
-            items={listStudent}
-            uniqueKey='id'
-            styleMainWrapper={styles.studentContainer}
-            onSelectedItemsChange={onSelectStudentChange}
-            selectedItems={studentMistake}
-            selectText='Học sinh vi phạm'
-            searchInputPlaceholderText='Tên học sinh'
-            styleTextDropdown={styles.criteriaName}
-            styleTextDropdownSelected={styles.criteriaName}
-            onChangeInput={(text) => console.warn(text)}
-            tagRemoveIconColor='gray'
-            tagBorderColor='gray'
-            tagTextColor='black'
-            selectedItemTextColor='red'
-            selectedItemIconColor='red'
-            itemTextColor='#000'
-            displayKey='name'
-            submitButtonColor='#CCC'
-            submitButtonText='Submit'
-            searchInputStyle={{ fontSize: fontSize.contentSmall }}
-          />
+        
         </View>
       </View>
       <TouchableOpacity
