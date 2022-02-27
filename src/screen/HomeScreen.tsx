@@ -53,9 +53,7 @@ const HomeScreen = () => {
     topicSubRelayData = `${MQTT_TOPIC_SUB.RELAY_DATA}${macAddress}`
     topicSubEnvironment = `${MQTT_TOPIC_SUB.ENV}${macAddress}`
     topicSubNotification = `${MQTT_TOPIC_SUB.NOTIFICATION}${macAddress}`
-    client.onConnectionLost = onConnectionLost;
-    client.onMessageArrived = onMessageArrived;
-    client.connect(options);
+    reconnect();
   }, [macAddress])
 
   var options = {
@@ -64,6 +62,15 @@ const HomeScreen = () => {
     password: MQTT_Broker.PASSWORD,
     onSuccess: onConnect,
     onFailure: onConnectionLost
+  }
+
+
+  function reconnect() {
+    client.onConnectionLost = onConnectionLost;
+    client.onMessageArrived = onMessageArrived;
+    client.connect(options);
+    console.log("reconnect");
+    
   }
 
   // connect the client
@@ -80,6 +87,7 @@ const HomeScreen = () => {
     if (responseObject.errorCode !== 0) {
       console.log("onConnectionLost:" + responseObject.errorMessage);
     }
+    reconnect();
   }
 
   function onMessageArrived(message: any) {
