@@ -2,7 +2,8 @@ import { SAVE_DEVICES, SET_DEVICE } from "../type"
 
 export type Device = {
     macAddress: string,
-    nameDevice: string
+    nameDevice: string,
+    id: string
 }
 
 export type DeviceList = Device[]

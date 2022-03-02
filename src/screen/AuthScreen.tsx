@@ -8,6 +8,8 @@ import { loginSuccess } from '../redux/action/auth'
 import auth from '@react-native-firebase/auth'
 import { saveDevices } from '../redux/action/listDevices'
 import { setCurrentDevice } from '../redux/action/device'
+import { getMacAddressByUserEmail } from '../api/register'
+import { MacAddressResponse } from '../model/Register'
 
 const ERROR_MESSAGE = {
   emailValid: 'Email is invalid!',
@@ -31,21 +33,8 @@ const AuthScreen = () => {
         email: res.user._user.email
       }
       dispatch(loginSuccess(payload))
-      dispatch(saveDevices([
-        {
-          macAddress: "12345678",
-          nameDevice: `Địa chỉ MAC: 12345678`
-        },
-        {
-          macAddress: "87654321",
-          nameDevice: `Địa chỉ MAC: 87654321`
+      await getMacAddress(userName)
 
-        }
-      ]))
-      dispatch(setCurrentDevice({
-        macAddress: "12345678",
-        nameDevice: `Địa chỉ MAC: 12345678`
-      }))
       navigation.dispatch(
         CommonActions.navigate({
           name: 'AppStack',
@@ -53,6 +42,20 @@ const AuthScreen = () => {
     } catch (e) {
       Alert.alert("Error", "Username or Password is wrong!")
     }
+  }
+
+  const getMacAddress = async (userName: string) => {
+    const res: any = await getMacAddressByUserEmail(userName)
+    console.log('keytest', res);
+    const listDevices = res.data.map((item: MacAddressResponse) => {
+      return {
+        macAddress: item.mac_address,
+        nameDevice: item.mac_address_name ? item.mac_address_name : `Địa chỉ MAC: ${item.mac_address}`,
+        id: item.id
+      }
+    })
+    dispatch(saveDevices(listDevices))
+    dispatch(setCurrentDevice(listDevices[0]))
   }
 
   return (
@@ -97,8 +100,8 @@ const AuthScreen = () => {
             CommonActions.navigate({
               name: 'RegisterScreen',
             }))}
-            >
-            <Text style={styles.register}>Đăng ký tài khoản</Text>
+        >
+          <Text style={styles.register}>Đăng ký tài khoản</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>

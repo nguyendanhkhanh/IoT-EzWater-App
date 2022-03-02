@@ -73,9 +73,10 @@ const UserScreen = () => {
           <TouchableOpacity onPress={() => navigation.dispatch(
             CommonActions.navigate({
               name: 'DeviceScreen',
+              params: { previousScreen: 'RegisterScreen', userEmail: email }
             })
           )}>
-            <Text style={styles.device}>{"Thêm hệ thống"}</Text>
+            <Text style={styles.device}>{"Danh sách hệ thống"}</Text>
           </TouchableOpacity>
           <Text style={styles.device}>{"Chuyển hệ thống"}</Text>
           <DropDownPicker

@@ -7,10 +7,10 @@ export const MQTT_Broker = {
 }
 
 export const MQTT_TOPIC_SUB = {
-    RELAY_1: "ESPs/RL1",
-    RELAY_2: "ESPs/RL2",
-    RELAY_3: "ESPs/RL3",
-    RELAY_4: "ESPs/RL4",
+    RELAY_1: "ESPr/RL1",
+    RELAY_2: "ESPr/RL2",
+    RELAY_3: "ESPr/RL3",
+    RELAY_4: "ESPr/RL4",
     RELAY_DATA: "ESPs/RL/",
     ENV: "ESPs/environment/",
     NOTIFICATION: 'APIs/notification/'

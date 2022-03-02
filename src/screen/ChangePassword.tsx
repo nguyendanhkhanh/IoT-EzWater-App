@@ -1,7 +1,6 @@
 import { CommonActions, useNavigation } from '@react-navigation/native'
 import React, { useState } from 'react'
 import { Alert, Image, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { changePassword } from '../api/user'
 import { color } from '../assets/color'
 import { fontSize } from '../assets/size'
 import Header from '../component/Header'
@@ -16,7 +15,7 @@ const ChangePassword = () => {
   const sendRequest = async () => {
     if (newPass !== newPassConfirm) return Alert.alert("Warning", "Password confirm is incorrect")
     try {
-      await changePassword(current, newPass)
+      // await changePassword(current, newPass)
       Alert.alert("Success", "Change password Success")
       navigation.dispatch(
         CommonActions.navigate({

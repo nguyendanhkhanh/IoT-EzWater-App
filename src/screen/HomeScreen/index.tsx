@@ -1,15 +1,17 @@
 import { CommonActions, useNavigation } from '@react-navigation/native'
 import React, { useEffect, useState } from 'react'
-import { Alert, FlatList, Image, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Alert, FlatList, Image, Modal, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import { color } from '../assets/color'
-import { fontSize, widthDevice } from '../assets/size'
-import { WATER_OFF, WATER_ON } from '../assets/source/icon'
-import HeaderMain from '../component/HeaderMain'
-import { TREE_STATUS } from '../constant/environment'
-import { MQTT_Broker, MQTT_TOPIC_SUB } from '../constant/mqtt'
-import { RelayData, Environment } from '../model/MqttData'
-import { RootState } from '../redux/reducer'
+import { WATER_OFF, WATER_ON } from '../../assets/source/icon'
+import HeaderMain from '../../component/HeaderMain'
+import { TREE_STATUS } from '../../constant/environment'
+import { MQTT_Broker, MQTT_TOPIC_SUB } from '../../constant/mqtt'
+import { RelayData, Environment } from '../../model/MqttData'
+import { setListRelay } from '../../redux/action/relay'
+import { RootState } from '../../redux/reducer'
+import { RelayInfo } from '../../redux/reducer/relay'
+import { styles } from './HomeScreen.style'
+import ModalEditRelayInfo from './ModalEditRelayInfo'
 
 const initEnv: Environment = {
   temperature: "0",
@@ -43,17 +45,25 @@ const HomeScreen = () => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const { macAddress } = useSelector((state: RootState) => state.device)
+  const listRelayInfo = useSelector((state: RootState) => state.relay)
   let topicSubRelayData = `${MQTT_TOPIC_SUB.RELAY_DATA}${macAddress}`
   let topicSubEnvironment = `${MQTT_TOPIC_SUB.ENV}${macAddress}`
   let topicSubNotification = `${MQTT_TOPIC_SUB.NOTIFICATION}${macAddress}`
+  let topicPubRelay1 = `${MQTT_TOPIC_SUB.RELAY_1}${macAddress}`
+  let topicPubRelay2 = `${MQTT_TOPIC_SUB.RELAY_2}${macAddress}`
+  let topicPubRelay3 = `${MQTT_TOPIC_SUB.RELAY_3}${macAddress}`
+  let topicPubRelay4 = `${MQTT_TOPIC_SUB.RELAY_4}${macAddress}`
   const [relayData, setRelayData] = useState<RelayData[]>(initRelay)
   const [environment, setEnvironment] = useState<Environment>(initEnv)
+  const [relayEdit, setRelayEdit] = useState<RelayInfo | null>(null)
 
   useEffect(() => {
     topicSubRelayData = `${MQTT_TOPIC_SUB.RELAY_DATA}${macAddress}`
     topicSubEnvironment = `${MQTT_TOPIC_SUB.ENV}${macAddress}`
     topicSubNotification = `${MQTT_TOPIC_SUB.NOTIFICATION}${macAddress}`
     reconnect();
+    console.log('keytest', macAddress);
+
   }, [macAddress])
 
   var options = {
@@ -70,7 +80,6 @@ const HomeScreen = () => {
     client.onMessageArrived = onMessageArrived;
     client.connect(options);
     console.log("reconnect");
-    
   }
 
   // connect the client
@@ -83,11 +92,36 @@ const HomeScreen = () => {
     console.log("Subscribe ", topicSubEnvironment);
   }
 
+  function onPublish(item: RelayData) {
+    const relayNewStatus = item.status === "1" ? "0" : "1"
+    switch (item.relay_id) {
+      case "1": {
+        client.publish(topicPubRelay1, relayNewStatus)
+        break;
+      }
+      case "2": {
+        client.publish(topicPubRelay2, relayNewStatus)
+        break;
+      }
+      case "3": {
+        client.publish(topicPubRelay3, relayNewStatus)
+        break;
+      }
+      case "4": {
+        client.publish(topicPubRelay4, relayNewStatus)
+        break;
+      }
+
+      default:
+        break;
+    }
+  }
+
   function onConnectionLost(responseObject: any) {
     if (responseObject.errorCode !== 0) {
       console.log("onConnectionLost:" + responseObject.errorMessage);
     }
-    reconnect();
+    // reconnect();
   }
 
   function onMessageArrived(message: any) {
@@ -111,43 +145,58 @@ const HomeScreen = () => {
     }
   }
 
+  const saveRelay = (newRelayInfo: RelayInfo) => {
+    const newRelay = listRelayInfo.find(item => item.relay_id === newRelayInfo.relay_id)
+    if (newRelay === undefined) return
+    newRelay.relay_name = newRelayInfo.relay_name
+    newRelay.relay_warning_humidity = newRelayInfo.relay_warning_humidity
+    dispatch(setListRelay(listRelayInfo))
+    setRelayEdit(null)
+  }
+
+
   const _renderItem = (item: RelayData, index: number) => {
+    const relayInfo = listRelayInfo.find(relay => relay.relay_id === item.relay_id)
     const soilHumidity = item.soil_humidity ? Number(item.soil_humidity) : 0
+    const soilHumidityWarning = relayInfo ? relayInfo.relay_warning_humidity : 50
     let treeStatus = TREE_STATUS.GOOD
     if (Number(item.status) === 1) treeStatus = TREE_STATUS.WATERING
     else {
-      if (soilHumidity < 30) treeStatus = TREE_STATUS.WARNING
+      if (soilHumidity < soilHumidityWarning) treeStatus = TREE_STATUS.WARNING
       else treeStatus = TREE_STATUS.GOOD
     }
     return (
       <View style={styles.device}>
-        <Image
-          source={Number(item.status) === 1 ? WATER_ON : WATER_OFF}
-          style={styles.deviceImage}
-        />
+        <TouchableOpacity onPress={() => onPublish(item)}>
+          <Image
+            source={Number(item.status) === 1 ? WATER_ON : WATER_OFF}
+            style={styles.deviceImage}
+          />
+        </TouchableOpacity>
         <View style={styles.deviceItemContainer}>
-          <Text style={styles.deviceName}>{`Van ${index + 1}`}</Text>
+          <Text style={styles.deviceName}>{relayInfo ? relayInfo.relay_name : `Van ${index + 1}`}</Text>
           <View style={styles.deviceInfo}>
             <View style={styles.deviceSoil}>
-              <Image source={require('../assets/icon/soil.png')}
+              <Image source={require('../../assets/icon/soil.png')}
                 style={styles.deviceIcon}
               />
               <Text style={styles.deviceContent}>{` ${item.soil_humidity ?? ''} %`}</Text>
             </View>
             <View style={styles.deviceSoil}>
-              <Image source={require('../assets/icon/soil_warning.png')}
+              <Image source={require('../../assets/icon/soil_warning.png')}
                 style={styles.deviceIcon}
               />
-              <Text style={styles.deviceContent}>{` ${"30"} %`}</Text>
+              <Text style={styles.deviceContent}>{` ${relayInfo ? relayInfo.relay_warning_humidity : 30} %`}</Text>
             </View>
           </View>
         </View>
         <View style={styles.deviceRight}>
-          <Image source={require('../assets/icon/status.png')}
+          <Image source={require('../../assets/icon/status.png')}
             style={[styles.deviceIconStatus, { tintColor: treeStatus }]}
           />
-          <TouchableOpacity style={styles.buttonEdit}>
-            <Image source={require('../assets/icon/edit.png')}
+          <TouchableOpacity style={styles.buttonEdit}
+            onPress={() => setRelayEdit(relayInfo ? relayInfo : null)}>
+            <Image source={require('../../assets/icon/edit.png')}
               style={styles.deviceIconEdit}
             />
           </TouchableOpacity>
@@ -157,21 +206,21 @@ const HomeScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScrollView style={styles.container}>
       <HeaderMain
         title="Môi trường"
       />
       <View style={styles.environmentContainer}>
         <View style={styles.environmentLeftContainer}>
           <Image
-            source={require('../assets/icon/temperature.png')}
+            source={require('../../assets/icon/temperature.png')}
             style={styles.iconEnvironment}
           />
           <Text style={styles.contentEnvironment}>{environment.temperature} °C</Text>
         </View>
         <View style={styles.environmentRightContainer}>
           <Image
-            source={require('../assets/icon/humidity.png')}
+            source={require('../../assets/icon/humidity.png')}
             style={styles.iconEnvironment}
           />
           <Text style={styles.contentEnvironment}>{environment.humidity} %</Text>
@@ -186,155 +235,15 @@ const HomeScreen = () => {
             renderItem={({ item, index }) => _renderItem(item, index)}
           />
         </View>
+        {relayEdit &&
+          <ModalEditRelayInfo
+            relayInfo={relayEdit}
+            onClose={() => setRelayEdit(null)}
+            onConfirm={(newRelayInfo) => saveRelay(newRelayInfo)}
+          />}
       </View>
-      <View style={styles.iconSendContainer}>
-        <TouchableOpacity onPress={() => navigation.dispatch(
-          CommonActions.navigate({
-            name: 'ReportInfo',
-          })
-        )}>
-          <Image source={require('../assets/icon/send.png')} style={styles.iconSend} />
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+    </ScrollView>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: color.background
-  },
-  mainContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-  },
-  environmentContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
-    backgroundColor: 'white',
-    paddingVertical: 10,
-    paddingHorizontal: '5%',
-    marginHorizontal: '5%',
-    borderRadius: 5,
-  },
-  environmentLeftContainer: {
-    flexDirection: 'row',
-    flex: 1,
-    alignItems: 'center',
-  },
-  environmentRightContainer: {
-    flexDirection: 'row',
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-end'
-  },
-  iconEnvironment: {
-    width: 50,
-    height: 50,
-    marginRight: 10
-  },
-  contentEnvironment: {
-    color: color.blueStrong,
-    fontSize: fontSize.title,
-    fontWeight: 'bold'
-  },
-  devicesContainer: {
-    paddingVertical: 10,
-    marginHorizontal: '5%',
-    borderRadius: 5,
-    width: '90%',
-
-  },
-  device: {
-    width: '100%',
-    marginTop: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    backgroundColor: 'white',
-    borderRadius: 5,
-    flexDirection: 'row',
-  },
-  deviceItemContainer: {
-    flex: 1,
-    marginLeft: 15,
-    justifyContent: 'space-between',
-    height: 65,
-  },
-  deviceInfo: {
-    flexDirection: 'row',
-  },
-  deviceSoil: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    flex: 1
-  },
-  deviceName: {
-    fontSize: fontSize.content,
-    fontWeight: 'bold',
-  },
-  deviceImage: {
-    width: 60,
-    height: 60,
-  },
-  deviceIcon: {
-    width: 25,
-    height: 25,
-  },
-  deviceIconEdit: {
-    width: 20,
-    height: 20,
-    tintColor: 'white'
-  },
-  deviceIconStatus: {
-    width: 15,
-    height: 15,
-  },
-  deviceContent: {
-    fontSize: fontSize.contentSmall
-  },
-  deviceRight: {
-    justifyContent: 'space-between',
-    alignItems: 'flex-end'
-  },
-  buttonEdit: {
-    backgroundColor: color.blueStrong,
-    width: 35,
-    height: 26,
-    borderRadius: 5,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  mainTitle: {
-    fontSize: fontSize.content,
-    fontWeight: 'bold',
-    marginTop: 20,
-  },
-  iconSearch: {
-    marginRight: 10
-  },
-  searchInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    width: widthDevice * 80 / 100,
-    height: 45,
-    backgroundColor: 'white',
-    color: 'black',
-    marginTop: 20,
-    borderRadius: 5,
-    paddingHorizontal: 15
-  },
-  iconSendContainer: {
-    alignItems: 'flex-end'
-  },
-  iconSend: {
-    width: 55,
-    height: 55,
-    margin: 30
-  }
-});
 
 export default HomeScreen

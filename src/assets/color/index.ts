@@ -6,4 +6,5 @@ export const color = {
     background: '#E6E5FE',
     border: '#CBD2D9',
     blackOpacity: 'rgba(0,0,0,0.3)',
+    red: 'red'
 }

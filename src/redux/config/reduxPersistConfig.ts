@@ -6,7 +6,7 @@ const ReduxPersist = {
     storeConfig: {
       key: 'primary',
       storage: AsyncStorage,
-      whitelist: ['auth', 'device', 'listDevices'],
+      whitelist: ['auth', 'device', 'listDevices', 'relay'],
     },
   };
   

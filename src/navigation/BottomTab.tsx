@@ -6,7 +6,7 @@ import { iconSize } from '../assets/iconSize'
 import HomeScreen from '../screen/HomeScreen'
 import HistoryScreen from '../screen/HistoryScreen'
 import UserScreen from '../screen/UserScreen'
-import ReportScreen from '../screen/ReportScreen'
+import WifiScreen from '../screen/WifiScreen'
 
 const BottomTab = () => {
   const BotTab = createBottomTabNavigator()
@@ -38,13 +38,13 @@ const BottomTab = () => {
               source={focused ? require('../assets/icon/history.png') : require('../assets/icon/history2.png')} />
           )
         }} />
-      <BotTab.Screen name="ReportScreen" component={ReportScreen}
+      <BotTab.Screen name="WifiScreen" component={WifiScreen}
         options={{
           tabBarShowLabel: false,
           tabBarIcon: ({ focused }) => (
             <Image
               style={{ width: iconSize, height: iconSize, tintColor: colorBlueStrong }}
-              source={focused ? require('../assets/icon/book.png') : require('../assets/icon/book2.png')} />
+              source={focused ? require('../assets/icon/wifi2.png') : require('../assets/icon/wifi.png')} />
           )
         }} />
       <BotTab.Screen name="UserScreen" component={UserScreen}

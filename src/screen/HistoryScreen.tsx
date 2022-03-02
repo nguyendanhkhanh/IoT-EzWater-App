@@ -3,20 +3,70 @@ import moment from 'moment'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView, ScrollView, StyleSheet, View, Text, TouchableOpacity, Image, TextInput, FlatList } from 'react-native'
 import DatePicker from 'react-native-date-picker'
+import { useSelector } from 'react-redux'
+import { statistic } from '../api/statistic'
 import { color } from '../assets/color'
 import { fontSize, widthDevice } from '../assets/size'
 import { WATER_OFF, WATER_ON } from '../assets/source/icon'
 import HeaderHome from '../component/HeaderMain'
 import { TREE_STATUS } from '../constant/environment'
 import { RelayData } from '../model/MqttData'
+import { RelayHistory } from '../model/RelayHistory'
+import { RootState } from '../redux/reducer'
 import usePagingInfo from '../ultil/usePagingInfo'
-import { initRelay } from './HomeScreen'
+
+interface RelayHistoryInfo {
+  relay_id: string,
+  pump_number: number,
+  water_amount: number,
+  history: RelayHistory[]
+}
+
+const initRelay1: RelayHistoryInfo = {
+  relay_id: "1",
+  pump_number: 0,
+  water_amount: 0,
+  history: []
+}
+const initRelay2: RelayHistoryInfo = {
+  relay_id: "2",
+  pump_number: 0,
+  water_amount: 0,
+  history: []
+}
+const initRelay3: RelayHistoryInfo = {
+  relay_id: "3",
+  pump_number: 0,
+  water_amount: 0,
+  history: []
+}
+const initRelay4: RelayHistoryInfo = {
+  relay_id: "4",
+  pump_number: 0,
+  water_amount: 0,
+  history: []
+}
+const initRelayHistoryInfo = [
+  initRelay1,
+  initRelay2,
+  initRelay3,
+  initRelay4
+]
 
 const HistoryScreen = () => {
   const navigation = useNavigation()
+  const listRelayInfo = useSelector((state: RootState) => state.relay)
+  const device = useSelector((state: RootState) => state.device)
   const [dateFromPicker, setDateFromPicker] = useState(false)
   const [dateToPicker, setDateToPicker] = useState(false)
-  const [relayData, setRelayData] = useState<RelayData[]>(initRelay)
+  const [timeFrom, setTimeFrom] = useState(moment().subtract(7, 'days').format())
+  const [timeTo, setTimeTo] = useState(moment().format())
+  const [relayHistory1, setRelayHistory1] = useState<RelayHistory[]>([])
+  const [relayHistory2, setRelayHistory2] = useState<RelayHistory[]>([])
+  const [relayHistory3, setRelayHistory3] = useState<RelayHistory[]>([])
+  const [relayHistory4, setRelayHistory4] = useState<RelayHistory[]>([])
+  const [listRelayHistoryInfo, setListRelayHistoryInfo] = useState<RelayHistoryInfo[]>(initRelayHistoryInfo)
+  // const [relayData, setRelayData] = useState<>([])
 
   const { pagingInfo, setPageIndex, setFilter } = usePagingInfo({
     filter: [
@@ -33,20 +83,42 @@ const HistoryScreen = () => {
       {
         key: 'StartDate',
         comparison: '==',
-        value: moment().format('MM/DD/YYYY')
+        value: moment().subtract(7, 'days').calendar()
       },
       {
         key: 'EndDate',
         comparison: '!=',
-        value: moment().add(10, 'days').calendar()
+        value: moment().format('MM/DD/YYYY')
       }
     ]
   });
 
   useEffect(() => {
+    getStatistic()
   }, [])
 
-  const _renderItem = (item: RelayData, index: number) => {
+  const getStatistic = async () => {
+    const newListRelay = [...listRelayHistoryInfo]
+
+    for (let i = 0; i < newListRelay.length; i++) {
+      const param = {
+        mac_address: 'mactest', //device.macAddress,
+        relay_id: newListRelay[i].relay_id,
+        time_from: timeFrom,
+        time_to: timeTo
+      }
+      const res: any = await statistic(param)
+      console.log('keytest', res);
+      if (res.data != null) {
+        newListRelay[i].history = res.data
+      }
+    }
+    setListRelayHistoryInfo(newListRelay)
+  }
+
+  const _renderItem = (item: RelayHistoryInfo, index: number) => {
+    const relayInfo = listRelayInfo.find(relay => relay.relay_id === item.relay_id)
+    const waterAmountTotal = item.history.reduce(((acc, cur) => acc + cur.water_amount), 0)
     return (
       <View style={styles.device}>
         <Image
@@ -54,23 +126,21 @@ const HistoryScreen = () => {
           style={styles.deviceImage}
         />
         <View style={styles.deviceItemContainer}>
-          <Text style={styles.deviceName}>{`Van ${index + 1}`}</Text>
-          {/* <View style={styles.deviceInfo}> */}
+          <Text style={styles.deviceName}>{relayInfo ? relayInfo.relay_name : `Van ${index + 1}`}</Text>
           <View style={styles.deviceSoil}>
-            {/* <Image source={require('../assets/icon/soil.png')}
-                style={styles.deviceIcon}
-              /> */}
+            <Image source={require('../assets/icon/soil.png')}
+              style={styles.deviceIcon}
+            />
             <Text style={styles.deviceName}>{`Đã bơm: `}</Text>
-            <Text style={styles.deviceContent}>{` ${item.soil_humidity ?? ''} lần`}</Text>
+            <Text style={styles.deviceContent}>{` ${item.history.length} lần`}</Text>
           </View>
           <View style={styles.deviceSoil}>
-            {/* <Image source={require('../assets/icon/soil_warning.png')}
-                style={styles.deviceIcon}
-              /> */}
+            <Image source={require('../assets/icon/water-drop.png')}
+              style={styles.deviceIconBig}
+            />
             <Text style={styles.deviceName}>{`Lượng nước: `}</Text>
-            <Text style={styles.deviceContent}>{` ${"30"} ml`}</Text>
+            <Text style={styles.deviceContent}>{` ${waterAmountTotal} ml`}</Text>
           </View>
-          {/* </View> */}
         </View>
         <View style={styles.deviceRight}>
           <TouchableOpacity>
@@ -119,6 +189,7 @@ const HistoryScreen = () => {
             comparison: '==',
             value: moment(date).format('MM/DD/YYYY')
           });
+          setTimeFrom(moment(date).format())
           setDateFromPicker(false)
         }}
         onCancel={() => {
@@ -136,16 +207,25 @@ const HistoryScreen = () => {
             value: moment(date).format('MM/DD/YYYY')
           });
           setDateToPicker(false)
+          setTimeTo(moment(date).format())
+          console.log('keytest', moment(date).format('MM/DD/YYYY'));
+
         }}
         onCancel={() => {
           setDateToPicker(false)
         }}
       />
       <View style={styles.mainContainer}>
+        <View style={styles.buttonConfirmView}>
+          <TouchableOpacity style={styles.buttonConfirmContainer}
+            onPress={() => getStatistic()}>
+            <Text style={styles.buttonConfirmTitle}>Thống kê</Text>
+          </TouchableOpacity>
+        </View>
         <Text style={styles.mainTitle}>Danh sách thiết bị</Text>
         <View style={styles.devicesContainer}>
           <FlatList
-            data={relayData}
+            data={initRelayHistoryInfo}
             keyExtractor={item => item.relay_id}
             renderItem={({ item, index }) => _renderItem(item, index)}
           />
@@ -274,6 +354,11 @@ const styles = StyleSheet.create({
     width: 25,
     height: 25,
   },
+  deviceIconBig: {
+    width: 25,
+    height: 15,
+    resizeMode: 'contain'
+  },
   deviceIconEdit: {
     width: 20,
     height: 20,
@@ -300,6 +385,22 @@ const styles = StyleSheet.create({
   more: {
     color: color.blueStrong,
     fontStyle: 'italic'
+  },
+  buttonConfirmView: {
+    width: '80%',
+    alignItems: 'flex-end'
+  },
+  buttonConfirmContainer: {
+    backgroundColor: color.blueStrong,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    marginTop: 10,
+    borderRadius: 5
+  },
+  buttonConfirmTitle: {
+    fontSize: fontSize.contentSmall,
+    color: 'white',
+    fontWeight: 'bold'
   }
 });
 

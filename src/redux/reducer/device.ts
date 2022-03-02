@@ -2,7 +2,7 @@ import { AnyAction } from "redux"
 import { Device } from "../action/listDevices"
 import { LOG_OUT, SET_DEVICE } from "../type"
 
-export const initialDevice: Device = {macAddress: ""}
+export const initialDevice: Device = {macAddress: "", nameDevice: "", id: ""}
 
 const deviceReducer = (state = JSON.parse(JSON.stringify(initialDevice)), action: AnyAction) => {
     const { type, payload } = action

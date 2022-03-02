@@ -26,4 +26,4 @@ export const getApiService = async () => {
   return axiosConfig;
 };
 
-export const baseUrl = 'http://10.0.2.2:5000'
+export const baseUrl = 'http://192.168.0.103:8000'

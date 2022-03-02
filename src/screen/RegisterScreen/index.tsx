@@ -25,12 +25,11 @@ const RegisterScreen = () => {
     if (err !== '') return Alert.alert("Error", err)
     try {
       // const res: any = await auth().createUserWithEmailAndPassword(userName, pass)
-      // console.log("keytest", res);
-      // Alert.alert('Success', 'Please input your device\'s info')
+      // Alert.alert('Đăng ký thành công', 'Vui lòng thêm thông tin thiết bị của bạn!')
       navigation.dispatch(
         CommonActions.navigate({
           name: 'DeviceScreen',
-          params: { previousScreen: 'RegisterScreen' }
+          params: { previousScreen: 'RegisterScreen', userEmail: userName }
         })
       )
 

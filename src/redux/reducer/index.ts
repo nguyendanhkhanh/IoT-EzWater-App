@@ -1,40 +1,29 @@
 import { combineReducers } from "redux";
-import { Criteria, Regulation } from "../../model/Mistake";
 import { Auth } from "../action/auth";
 import auth, { initialToken } from "./auth"
-import { initialCriteria } from "./criteria";
-import mistake, { DcpReport, initialDcpReport } from "./mistake";
-import criteria from "./criteria"
-import regulation from './regulation'
-import { initialRegulation } from "./regulation";
 import { Device, DeviceList } from "../action/listDevices";
 import listDevices, { initialListDevices } from "./listDevices";
 import device, { initialDevice } from "./device";
+import relay, { initialListRelay, RelayList } from "./relay";
 export interface RootState {
     auth: Auth;
-    mistake: DcpReport,
-    criteria: Criteria[],
-    regulation: Regulation[]
     listDevices: DeviceList
     device: Device
+    relay: RelayList
 }
 
 export const initialState: RootState = {
     auth: initialToken,
-    mistake: initialDcpReport,
-    criteria: initialCriteria,
-    regulation: initialRegulation,
     listDevices: initialListDevices,
-    device: initialDevice
+    device: initialDevice,
+    relay: initialListRelay
 }
 
 const rootReducer = combineReducers({
     auth,
-    mistake,
-    criteria,
-    regulation,
     listDevices,
-    device
+    device,
+    relay
 });
 
 export default rootReducer;
