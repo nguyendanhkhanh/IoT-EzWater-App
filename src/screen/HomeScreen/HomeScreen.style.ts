@@ -130,7 +130,8 @@ export const styles = StyleSheet.create({
         paddingHorizontal: 15
     },
     iconSendContainer: {
-        alignItems: 'flex-end'
+        flexDirection: 'row',
+        justifyContent: 'space-between'
     },
     iconSend: {
         width: 55,

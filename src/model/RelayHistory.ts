@@ -1,8 +1,7 @@
 export interface RelayHistory {
     relay_id: string,
     water_amount: number,
-    time_on: string
-    time_off: string
+    water_time: number,
     mac_address: string
     timestamp: string
 }

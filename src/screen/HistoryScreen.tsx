@@ -102,7 +102,7 @@ const HistoryScreen = () => {
 
     for (let i = 0; i < newListRelay.length; i++) {
       const param = {
-        mac_address: 'mactest', //device.macAddress,
+        mac_address: device.macAddress,
         relay_id: newListRelay[i].relay_id,
         time_from: timeFrom,
         time_to: timeTo
@@ -118,7 +118,7 @@ const HistoryScreen = () => {
 
   const _renderItem = (item: RelayHistoryInfo, index: number) => {
     const relayInfo = listRelayInfo.find(relay => relay.relay_id === item.relay_id)
-    const waterAmountTotal = item.history.reduce(((acc, cur) => acc + cur.water_amount), 0)
+    const waterAmountTotal = item.history.reduce(((acc, cur) => acc + cur.water_amount*cur.water_time), 0)
     return (
       <View style={styles.device}>
         <Image
@@ -225,7 +225,7 @@ const HistoryScreen = () => {
         <Text style={styles.mainTitle}>Danh sách thiết bị</Text>
         <View style={styles.devicesContainer}>
           <FlatList
-            data={initRelayHistoryInfo}
+            data={listRelayHistoryInfo}
             keyExtractor={item => item.relay_id}
             renderItem={({ item, index }) => _renderItem(item, index)}
           />

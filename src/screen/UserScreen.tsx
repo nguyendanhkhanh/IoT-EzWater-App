@@ -40,7 +40,7 @@ const UserScreen = () => {
 
   const onSelectDevice = (e: any) => {
     console.log("keytest", e);
-    dispatch(setCurrentDevice({ macAddress: e.value, nameDevice: e.label }))
+    dispatch(setCurrentDevice({ macAddress: e.value, nameDevice: e.label, id: e.id }))
     navigation.dispatch(
       CommonActions.navigate({
         name: 'HomeScreen',
@@ -73,7 +73,7 @@ const UserScreen = () => {
           <TouchableOpacity onPress={() => navigation.dispatch(
             CommonActions.navigate({
               name: 'DeviceScreen',
-              params: { previousScreen: 'RegisterScreen', userEmail: email }
+              params: { previousScreen: 'UserScreen', userEmail: email }
             })
           )}>
             <Text style={styles.device}>{"Danh sách hệ thống"}</Text>
