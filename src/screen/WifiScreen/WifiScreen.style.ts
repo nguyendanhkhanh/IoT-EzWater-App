@@ -6,4 +6,12 @@ export const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: color.background
     },
+    contentContainer: {
+        margin: 20
+    },
+    buttonSend: {
+        marginBottom: "20%",
+        marginHorizontal: "10%",
+        width: '80%'
+      },
 })

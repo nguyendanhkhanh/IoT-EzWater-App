@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { WATER_OFF, WATER_ON } from '../../assets/source/icon'
 import HeaderMain from '../../component/HeaderMain'
 import { TREE_STATUS } from '../../constant/environment'
-import { MQTT_Broker, MQTT_TOPIC_SUB } from '../../constant/mqtt'
+import { MQTT_Broker, MQTT_TOPIC_PUB, MQTT_TOPIC_SUB } from '../../constant/mqtt'
 import { RelayData, Environment } from '../../model/MqttData'
 import { setListRelay } from '../../redux/action/relay'
 import { RootState } from '../../redux/reducer'
@@ -49,10 +49,11 @@ const HomeScreen = () => {
   let topicSubRelayData = `${MQTT_TOPIC_SUB.RELAY_DATA}${macAddress}`
   let topicSubEnvironment = `${MQTT_TOPIC_SUB.ENV}${macAddress}`
   let topicSubNotification = `${MQTT_TOPIC_SUB.NOTIFICATION}${macAddress}`
-  let topicPubRelay1 = `${MQTT_TOPIC_SUB.RELAY_1}${macAddress}`
-  let topicPubRelay2 = `${MQTT_TOPIC_SUB.RELAY_2}${macAddress}`
-  let topicPubRelay3 = `${MQTT_TOPIC_SUB.RELAY_3}${macAddress}`
-  let topicPubRelay4 = `${MQTT_TOPIC_SUB.RELAY_4}${macAddress}`
+  let topicPubRelay0 = `${MQTT_TOPIC_PUB.RELAY_0}${macAddress}`
+  let topicPubRelay1 = `${MQTT_TOPIC_PUB.RELAY_1}${macAddress}`
+  let topicPubRelay2 = `${MQTT_TOPIC_PUB.RELAY_2}${macAddress}`
+  let topicPubRelay3 = `${MQTT_TOPIC_PUB.RELAY_3}${macAddress}`
+  let topicPubRelay4 = `${MQTT_TOPIC_PUB.RELAY_4}${macAddress}`
   const [relayData, setRelayData] = useState<RelayData[]>(initRelay)
   const [environment, setEnvironment] = useState<Environment>(initEnv)
   const [relayEdit, setRelayEdit] = useState<RelayInfo | null>(null)
@@ -96,19 +97,51 @@ const HomeScreen = () => {
     const relayNewStatus = item.status === "1" ? "0" : "1"
     switch (item.relay_id) {
       case "1": {
-        client.publish(topicPubRelay1, relayNewStatus)
+        if (relayNewStatus === "1") {
+          client.publish(topicPubRelay1, relayNewStatus)
+          client.publish(topicPubRelay0, relayNewStatus)
+        }
+        else {
+          client.publish(topicPubRelay1, relayNewStatus)
+          const currentWater = relayData.find(item => item.status == "1")
+          if (currentWater === undefined) client.publish(topicPubRelay0, relayNewStatus)
+        }
         break;
       }
       case "2": {
-        client.publish(topicPubRelay2, relayNewStatus)
+        if (relayNewStatus === "1") {
+          client.publish(topicPubRelay2, relayNewStatus)
+          client.publish(topicPubRelay0, relayNewStatus)
+        }
+        else {
+          client.publish(topicPubRelay2, relayNewStatus)
+          const currentWater = relayData.find(item => item.status == "1")
+          if (currentWater === undefined) client.publish(topicPubRelay0, relayNewStatus)
+        }
         break;
       }
       case "3": {
-        client.publish(topicPubRelay3, relayNewStatus)
+        if (relayNewStatus === "1") {
+          client.publish(topicPubRelay3, relayNewStatus)
+          client.publish(topicPubRelay0, relayNewStatus)
+        }
+        else {
+          client.publish(topicPubRelay3, relayNewStatus)
+          const currentWater = relayData.find(item => item.status == "1")
+          if (currentWater === undefined) client.publish(topicPubRelay0, relayNewStatus)
+        }
         break;
       }
       case "4": {
-        client.publish(topicPubRelay4, relayNewStatus)
+        if (relayNewStatus === "1") {
+          client.publish(topicPubRelay4, relayNewStatus)
+          client.publish(topicPubRelay0, relayNewStatus)
+        }
+        else {
+          client.publish(topicPubRelay4, relayNewStatus)
+          const currentWater = relayData.find(item => item.status == "1")
+          if (currentWater === undefined) client.publish(topicPubRelay0, relayNewStatus)
+        }
         break;
       }
 
@@ -206,7 +239,7 @@ const HomeScreen = () => {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <HeaderMain
         title="Môi trường"
       />
@@ -242,7 +275,7 @@ const HomeScreen = () => {
             onConfirm={(newRelayInfo) => saveRelay(newRelayInfo)}
           />}
       </View>
-    </ScrollView>
+    </SafeAreaView>
   )
 }
 

@@ -7,18 +7,20 @@ export const MQTT_Broker = {
 }
 
 export const MQTT_TOPIC_SUB = {
-    RELAY_1: "ESPr/RL1",
-    RELAY_2: "ESPr/RL2",
-    RELAY_3: "ESPr/RL3",
-    RELAY_4: "ESPr/RL4",
+    RELAY_0: "ESPs/RL0/",
+    RELAY_1: "ESPs/RL1/",
+    RELAY_2: "ESPs/RL2/",
+    RELAY_3: "ESPs/RL3/",
+    RELAY_4: "ESPs/RL4/",
     RELAY_DATA: "ESPs/RL/",
     ENV: "ESPs/environment/",
     NOTIFICATION: 'APIs/notification/'
 }
 
 export const MQTT_TOPIC_PUB = {
-    RELAY_1: "ESPr/RL1",
-    RELAY_2: "ESPr/RL2",
-    RELAY_3: "ESPr/RL3",
-    RELAY_4: "ESPr/RL4",
+    RELAY_0: "ESPn/RL0",
+    RELAY_1: "ESPn/RL1",
+    RELAY_2: "ESPn/RL2",
+    RELAY_3: "ESPn/RL3",
+    RELAY_4: "ESPn/RL4",
 }
