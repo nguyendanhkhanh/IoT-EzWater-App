@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react'
 import ChangePassword from '../screen/ChangePassword';
+import DetailHistoryScreen from '../screen/DetailHistoryScreen';
 import DeviceScreen from '../screen/DeviceScreen';
 import HomeScreen from '../screen/HomeScreen';
 import BottomTab from './BottomTab';
@@ -24,6 +25,8 @@ const AppStack = () => {
       {_renderItemScreen('HomeScreen', HomeScreen)}
       {_renderItemScreen('ChangePassword', ChangePassword)}
       {_renderItemScreen('DeviceScreen', DeviceScreen)}
+      {_renderItemScreen('DetailHistoryScreen', DetailHistoryScreen)}
+
     </Stack.Navigator>
   )
 }

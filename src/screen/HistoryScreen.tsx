@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native'
+import { CommonActions, useNavigation } from '@react-navigation/native'
 import moment from 'moment'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView, ScrollView, StyleSheet, View, Text, TouchableOpacity, Image, TextInput, FlatList } from 'react-native'
@@ -15,7 +15,7 @@ import { RelayHistory } from '../model/RelayHistory'
 import { RootState } from '../redux/reducer'
 import usePagingInfo from '../ultil/usePagingInfo'
 
-interface RelayHistoryInfo {
+export interface RelayHistoryInfo {
   relay_id: string,
   pump_number: number,
   water_amount: number,
@@ -118,7 +118,7 @@ const HistoryScreen = () => {
 
   const _renderItem = (item: RelayHistoryInfo, index: number) => {
     const relayInfo = listRelayInfo.find(relay => relay.relay_id === item.relay_id)
-    const waterAmountTotal = item.history.reduce(((acc, cur) => acc + cur.water_amount*cur.water_time), 0)
+    const waterAmountTotal = item.history.reduce(((acc, cur) => acc + cur.water_amount * cur.water_time), 0)
     return (
       <View style={styles.device}>
         <Image
@@ -143,7 +143,14 @@ const HistoryScreen = () => {
           </View>
         </View>
         <View style={styles.deviceRight}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => {
+            navigation.dispatch(
+              CommonActions.navigate({
+                name: 'DetailHistoryScreen',
+                params: { history: item.history }
+              })
+            )
+          }}>
             <Text style={styles.more}>{`Chi tiết: `}</Text>
           </TouchableOpacity>
         </View>
