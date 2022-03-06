@@ -58,7 +58,6 @@ const DeviceScreen = () => {
 
   const saveListDevices = async () => {
     if (listDevice.length < 1) return
-    console.log('keytest', listDevice);
     const params = {
       user_email: auth.email ? auth.email : '',
       devices: listDevice.map(item => ({

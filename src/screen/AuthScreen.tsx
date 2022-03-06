@@ -8,8 +8,10 @@ import { loginSuccess } from '../redux/action/auth'
 import auth from '@react-native-firebase/auth'
 import { saveDevices } from '../redux/action/listDevices'
 import { setCurrentDevice } from '../redux/action/device'
-import { getMacAddressByUserEmail } from '../api/register'
+import { getMacAddressByUserEmail, saveDeviceToken } from '../api/register'
 import { MacAddressResponse } from '../model/Register'
+
+import messaging from '@react-native-firebase/messaging';
 
 const ERROR_MESSAGE = {
   emailValid: 'Email is invalid!',
@@ -32,6 +34,16 @@ const AuthScreen = () => {
       const payload = {
         email: res.user._user.email
       }
+      // get firebase push token
+      const deviceToken = await messaging().getToken();
+      console.log('token', deviceToken);
+      // save device token
+      const paramSaveDeviceToken = {
+        email: userName,
+        device_token: deviceToken
+      }
+      saveDeviceToken(paramSaveDeviceToken)
+
       dispatch(loginSuccess(payload))
       await getMacAddress(userName)
 

@@ -15,3 +15,9 @@ export const getMacAddressByUserEmail = async (email: string) => {
     const axios = await getApiService()
     return axios.post(endpoint, param)
 }
+
+export const saveDeviceToken = async (params: {device_token: string, email: string}) => {
+    const endpoint = `api/save-token`
+    const axios = await getApiService()
+    return axios.post(endpoint, params)
+}

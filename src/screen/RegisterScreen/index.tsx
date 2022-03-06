@@ -5,6 +5,8 @@ import { useDispatch } from 'react-redux'
 import auth from '@react-native-firebase/auth'
 import { styles } from './RegisterScreen.style'
 import { color } from '../../assets/color'
+import messaging from '@react-native-firebase/messaging';
+import { saveDeviceToken } from '../../api/register'
 const ERROR_MESSAGE = {
   emailValid: 'Email is invalid!',
 }
@@ -26,6 +28,16 @@ const RegisterScreen = () => {
     try {
       // const res: any = await auth().createUserWithEmailAndPassword(userName, pass)
       // Alert.alert('Đăng ký thành công', 'Vui lòng thêm thông tin thiết bị của bạn!')
+      // get firebase push token
+      const deviceToken = await messaging().getToken();
+      console.log('token', deviceToken);
+      // save device token
+      const paramSaveDeviceToken = {
+        email: userName,
+        device_token: deviceToken
+      }
+      saveDeviceToken(paramSaveDeviceToken)
+
       navigation.dispatch(
         CommonActions.navigate({
           name: 'DeviceScreen',
