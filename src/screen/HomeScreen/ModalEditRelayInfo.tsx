@@ -13,6 +13,8 @@ interface Props {
 export default function ModalEditRelayInfo(props: Props) {
   const { relayInfo, onClose, onConfirm } = props
   const [relayName, setRelayName] = useState(relayInfo.relay_name)
+  const [autoOnOff, setAutoOnOff] = useState(relayInfo.auto_on_off)
+  const [waterTime, setWaterTime] = useState(relayInfo.water_time)
   const [humidityWarning, setHumidityWarning] = useState(relayInfo.relay_warning_humidity)
 
   const onConfirmEdit = () => {
@@ -60,6 +62,27 @@ export default function ModalEditRelayInfo(props: Props) {
               value={humidityWarning.toString()}
               style={styles.modalContentInput}
               onChangeText={value => { setHumidityWarning(Number(value)) }}
+            />
+          </View>
+          <View style={styles.modalLineContainer}>
+            <Text style={styles.modalContent}>Tự động bơm: </Text>
+            <TouchableOpacity style={styles.autoContainer}
+              onPress={() => setAutoOnOff(!autoOnOff)}>
+              <View style={[styles.autoButtonContainer, autoOnOff && styles.bgcGrey]}>
+                <Text style={styles.autoTitle}>OFF</Text>
+              </View>
+              <View style={[styles.autoButtonContainer, !autoOnOff && styles.bgcGrey]}>
+                <Text style={styles.autoTitle}>ON</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.modalLineContainer}>
+            <Text style={styles.modalContent}>Thời gian bơm: </Text>
+            <TextInput
+              placeholder="Nhập thời gian tự động bơm"
+              value={waterTime.toString()}
+              style={styles.modalContentInput}
+              onChangeText={value => { setWaterTime(Number(value)) }}
             />
           </View>
           {_renderFooterModal()}

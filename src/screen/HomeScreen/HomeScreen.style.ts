@@ -149,7 +149,7 @@ export const styles = StyleSheet.create({
         backgroundColor: 'white',
         paddingTop: 20,
         alignItems: 'center',
-        height: '25%',
+        height: '32%',
         borderRadius: 10
     },
     modalLineContainer: {
@@ -200,5 +200,22 @@ export const styles = StyleSheet.create({
         fontSize: fontSize.content,
         fontWeight: 'bold',
         color: color.red
+    },
+    autoContainer: {
+        flexDirection: 'row',
+        flex: 1
+    },
+    autoButtonContainer: {
+        width: 40,
+        backgroundColor: 'white',
+        alignItems: 'center',
+        paddingVertical: 3,
+        borderRadius: 3
+    },
+    autoTitle: {
+        fontWeight: 'bold',
+    },
+    bgcGrey: {
+        backgroundColor: 'grey'
     }
 });
