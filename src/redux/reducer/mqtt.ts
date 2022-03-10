@@ -8,25 +8,25 @@ export interface MqttData {
 }
 
 export const initEnv: Environment = {
-    temperature: "0",
-    humidity: "0"
+    temperature: "16",
+    humidity: "63"
 }
 
 export const initRelay: RelayData[] = [
     {
         relay_id: "1",
-        status: "0",
-        soil_humidity: "0"
+        status: "1",
+        soil_humidity: "68"
     },
     {
         relay_id: "2",
         status: "0",
-        soil_humidity: "0"
+        soil_humidity: "60"
     },
     {
         relay_id: "3",
-        status: "0",
-        soil_humidity: "0"
+        status: "1",
+        soil_humidity: "30"
     },
     {
         relay_id: "4",

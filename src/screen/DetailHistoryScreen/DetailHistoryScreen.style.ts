@@ -169,7 +169,8 @@ export const styles = StyleSheet.create({
         height: 15,
     },
     deviceContent: {
-        fontSize: fontSize.contentSmall
+        fontSize: fontSize.contentSmall,
+        marginTop: 2
     },
     deviceRight: {
         justifyContent: 'space-between',

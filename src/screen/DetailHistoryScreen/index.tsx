@@ -1,4 +1,5 @@
 import { CommonActions, useNavigation, useRoute } from '@react-navigation/native'
+import moment from 'moment'
 import React, { useEffect, useState } from 'react'
 import { Alert, FlatList, Image, Modal, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -45,7 +46,6 @@ const DetailHistoryScreen = () => {
           style={styles.deviceImage}
         />
         <View style={styles.deviceItemContainer}>
-          <Text style={styles.deviceName}>{relayInfo ? relayInfo.relay_name : `Van ${index + 1}`}</Text>
           <View style={styles.deviceSoil}>
             <Image source={require('../../assets/icon/soil.png')}
               style={styles.deviceIcon}
@@ -60,6 +60,9 @@ const DetailHistoryScreen = () => {
             <Text style={styles.deviceName}>{`Lượng nước: `}</Text>
             <Text style={styles.deviceContent}>{` ${item.water_amount} ml`}</Text>
           </View>
+          <View style={styles.deviceSoil}>
+            <Text style={styles.deviceContent}>{` ${moment(item.timestamp).format('MMMM Do YYYY, h:mm:ss a') }`}</Text>
+          </View>
         </View>
       </View>
     )
@@ -67,7 +70,7 @@ const DetailHistoryScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Header
-        title="Lịch sử tưới"
+        title={`Lịch sử tưới Orchid`}
       />
       <View style={{ flex: 1, width: '90%' }}>
         <FlatList
